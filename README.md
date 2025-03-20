@@ -11,7 +11,7 @@
 -  Data Persistence
 -  Uses localStorage to store user session.
 
-## GitHub Contributors
+## GitHub Contributors:
 
 - Roy Cuadra
 - Lino Tesiorna
