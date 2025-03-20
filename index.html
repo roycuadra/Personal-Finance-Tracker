@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      background-color: #4361ee;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .logo i {
+      margin-right: 0.5rem;
+      font-size: 1.8rem;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .form-container {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      overflow: hidden;
+    }
+
+    .form-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .tab {
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      color: #6c757d;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      background-color: white;
+      color: #4361ee;
+      border-bottom: 3px solid #4361ee;
+    }
+
+    .form-content {
+      padding: 2rem;
+    }
+
+    .form {
+      display: none;
+    }
+
+    .form.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #495057;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid #dee2e6;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4361ee;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.9rem;
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #3a56e8;
+    }
+
+    .form-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: #6c757d;
+    }
+
+    .form-footer a {
+      color: #4361ee;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .form-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .success-message {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-input {
+      width: 100%;
+      padding-right: 40px;
+      /* Space for the button */
+      transition: all 0.3s ease-in-out;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 1.2em;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .toggle-password.active {
+      transform: scale(1.2);
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="logo">
+      <i class="fas fa-chart-line"></i>
+      <span>Personal Finance Tracker</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="form-container" data-aos="zoom-in" data-aos-duration="1000">
+      <div class="form-tabs">
+        <div class="tab active" id="login-tab">Login</div>
+        <div class="tab" id="register-tab">Register</div>
+      </div>
+
+      <div class="form-content">
+        <div id="success-message" class="success-message"></div>
+        <div id="error-message" class="error-message"></div>
+
+        <div class="form active" id="login-form">
+          <div class="form-group">
+            <label for="login-username" class="form-label">Username</label>
+            <input type="text" id="login-username" class="form-input" placeholder="Enter your username">
+          </div>
+
+          <div class="form-group">
+            <label for="login-password" class="form-label">Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="login-password" class="form-input" placeholder="Enter your password">
+              <button type="button" id="toggle-login-password" class="toggle-password">👁</button>
+            </div>
+          </div>
+          <button class="btn" id="login-btn">Login</button>
+          <div class="form-footer">
+            Don't have an account? <a href="#" id="to-register">Register</a>
+          </div>
+        </div>
+
+        <div class="form" id="register-form">
+          <div class="form-group">
+            <label for="register-username" class="form-label">Username</label>
+            <input type="text" id="register-username" class="form-input" placeholder="Choose a username">
+          </div>
+          <div class="form-group">
+            <label for="register-password" class="form-label">Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="register-password" class="form-input" placeholder="Choose a password">
+              <button type="button" id="toggle-register-password" class="toggle-password">👁</button>
+            </div>
+          </div>
+          <button class="btn" id="register-btn">Register</button>
+          <div class="form-footer">
+            Already have an account? <a href="#" id="to-login">Login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function togglePasswordVisibility(inputId, buttonId) {
+      const passwordField = document.getElementById(inputId);
+      const toggleButton = document.getElementById(buttonId);
+      if (passwordField.type === "password") {
+        passwordField.type = "text";
+        toggleButton.classList.add("active");
+        toggleButton.textContent = "👁";
+      } else {
+        passwordField.type = "password";
+        toggleButton.classList.remove("active");
+        toggleButton.textContent = "👁";
+      }
+    }
+
+    document.getElementById("toggle-register-password").addEventListener("click", function () {
+      togglePasswordVisibility("register-password", "toggle-register-password");
+    });
+
+    document.getElementById("toggle-login-password").addEventListener("click", function () {
+      togglePasswordVisibility("login-password", "toggle-login-password");
+    });
+  </script>
+
+
+
+  <script>
+    // DOM Elements
+    const loginTab = document.getElementById('login-tab');
+    const registerTab = document.getElementById('register-tab');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const toRegister = document.getElementById('to-register');
+    const toLogin = document.getElementById('to-login');
+    const loginBtn = document.getElementById('login-btn');
+    const registerBtn = document.getElementById('register-btn');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+
+    // Tab switching
+    function switchToLogin() {
+      loginTab.classList.add('active');
+      registerTab.classList.remove('active');
+      loginForm.classList.add('active');
+      registerForm.classList.remove('active');
+      clearMessages();
+    }
+
+    function switchToRegister() {
+      registerTab.classList.add('active');
+      loginTab.classList.remove('active');
+      registerForm.classList.add('active');
+      loginForm.classList.remove('active');
+      clearMessages();
+    }
+
+    // Event listeners
+    loginTab.addEventListener('click', switchToLogin);
+    registerTab.addEventListener('click', switchToRegister);
+    toRegister.addEventListener('click', switchToRegister);
+    toLogin.addEventListener('click', switchToLogin);
+
+    // Clear messages
+    function clearMessages() {
+      successMessage.style.display = 'none';
+      errorMessage.style.display = 'none';
+    }
+
+    // Show message
+    function showMessage(type, message) {
+      clearMessages();
+      if (type === 'success') {
+        successMessage.textContent = message;
+        successMessage.style.display = 'block';
+      } else {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+      }
+    }
+
+    // Registration
+    registerBtn.addEventListener('click', function () {
+      const username = document.getElementById('register-username').value.trim();
+      const password = document.getElementById('register-password').value.trim();
+
+      if (!username || !password) {
+        showMessage('error', 'Username and password are required');
+        return;
+      }
+
+      // Check if user already exists
+      const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+      if (users[username]) {
+        showMessage('error', 'Username already exists');
+        return;
+      }
+
+      // Store new user
+      users[username] = { password };
+      localStorage.setItem('users', JSON.stringify(users));
+
+      // Clear form
+      document.getElementById('register-username').value = '';
+      document.getElementById('register-password').value = '';
+
+      showMessage('success', 'Registration successful! You can now login.');
+
+      // Switch to login after a delay
+      setTimeout(switchToLogin, 2000);
+    });
+
+    // Login
+    loginBtn.addEventListener('click', function () {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+
+      if (!username || !password) {
+        showMessage('error', 'Username and password are required');
+        return;
+      }
+
+      // Check credentials
+      const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+      if (!users[username] || users[username].password !== password) {
+        showMessage('error', 'Invalid username or password');
+        return;
+      }
+
+      // Set logged in user
+      localStorage.setItem('currentUser', username);
+
+      // Show success and redirect (in a real app, redirect to dashboard)
+      showMessage('success', 'Login successful! Redirecting...');
+
+      // Simulate redirect after delay
+      setTimeout(function () {
+        // In a real app, you would redirect to the dashboard or home page
+        window.location.href = 'index.html';
+      }, 1000);
+    });
+  </script>
+
+  <script>
+    window.onload = function () {
+      const currentUser = localStorage.getItem('currentUser');
+
+      if (currentUser) {
+        // Redirect logged-in users away from the login page
+        window.location.href = 'dashboard.html'; // Replace with your actual dashboard page
+      }
+    };
+  </script>
+
+  <script>
+    AOS.init();
+  </script>
+
+
+</body>
+
+</html>
