@@ -10,3 +10,9 @@
 -  Add New Transaction
 -  Data Persistence
 -  Uses localStorage to store user session.
+
+## GitHub Contributors
+
+- Roy Cuadra
+- Lino Tesiorna
+- Melanel Masudog
