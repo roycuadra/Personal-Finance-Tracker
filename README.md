@@ -1,6 +1,6 @@
 # Personal Finance Tracker 💹
 
-## Features needed to be implemented: 
+## Features to be implemented: 
 -  User Authentication ✔
 -  Dashboard Interface
 -  Current Balance Display
