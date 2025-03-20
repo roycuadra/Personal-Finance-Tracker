@@ -1,4 +1,4 @@
-# Personal Finance Tracker
+# Personal Finance Tracker 💹
 
 ## Features to be implemented: 
 -  User Authentication ✔
