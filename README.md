@@ -1,7 +1,7 @@
 # Personal Finance Tracker
 
-## features and Goal to be implemented: 
--  User Authentication
+## Features to be implemented: 
+-  User Authentication ✔
 -  Dashboard Interface
 -  Current Balance Display
 -  Transaction Filtering
