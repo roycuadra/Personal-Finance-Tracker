@@ -18,6 +18,7 @@
     <div class="dashboard-header">
       <i class="fas fa-wallet"></i>
       <h1>Personal Finance Tracker Dashboard</h1>
+      <button type="button" title="LogOut" style="border: none; margin-left: auto;" onclick="logout()">
         <i class="fas fa-sign-out-alt"></i>
       </button>
     </div>
@@ -112,11 +113,290 @@
               </select>
             </div>
           </div>
+          <button type="button" class="btn-primary" onclick="addTransaction()">Add Transaction</button>
 
         </form>
       </div>
     </div>
   </div>
+
+
+  <script>
+    window.onload = function () {
+      const currentUser = localStorage.getItem('currentUser');
+
+      if (!currentUser) {
+        // Redirect users back to login if they're not authenticated
+        window.location.href = 'index.html';
+      }
+    };
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('currentUser'); // Clear session
+      window.location.href = 'index.html'; // Redirect to login
+    }
+  </script>
+
+  <script>
+    AOS.init();
+  </script>
+
+
+<script>
+// Get elements
+const balanceEl = document.getElementById("balance");
+const transactionList = document.getElementById("transaction-list");
+const descInput = document.getElementById("desc");
+const amountInput = document.getElementById("amount");
+const typeInput = document.getElementById("type");
+const categoryInput = document.getElementById("category");
+const categoryFilter = document.getElementById("category-filter");
+const chartCtx = document.getElementById("expenseChart").getContext("2d");
+
+// Initialize chart
+let expenseChart = null;
+
+// Check if localStorage has transactions, if not, set default transactions
+let storedTransactions = JSON.parse(localStorage.getItem("transactions"));
+
+if (!storedTransactions || storedTransactions.length === 0) {
+  storedTransactions = [
+    {
+      desc: "Monthly Salary",
+      amount: 50000,
+      type: "income",
+      category: "Salary",
+    },
+    {
+      desc: "Siargao Vacation",
+      amount: 20000,
+      type: "expense",
+      category: "Travel",
+    },
+    { desc: "Land Tour", amount: 5000, type: "expense", category: "Travel" },
+  ];
+  localStorage.setItem("transactions", JSON.stringify(storedTransactions)); // Save to localStorage
+}
+
+let transactions = storedTransactions; // Assign transactions to be used in UI
+
+// Function to update UI
+function updateUI() {
+  transactionList.innerHTML = "";
+  let totalBalance = 0;
+  let filteredTransactions = transactions.filter(
+    (t) => categoryFilter.value === "all" || t.category === categoryFilter.value
+  );
+
+  // Sort transactions (newest first)
+  filteredTransactions = [...filteredTransactions].reverse();
+
+  filteredTransactions.forEach((transaction, index) => {
+    const actualIndex = transactions.indexOf(transaction);
+
+    const transactionItem = document.createElement("div");
+    transactionItem.classList.add("transaction-item");
+    transactionItem.classList.add(transaction.type);
+
+    transactionItem.innerHTML = `
+            <div class="transaction-info">
+                <span class="transaction-desc">${transaction.desc}</span>
+                <span class="transaction-category">${
+                  transaction.category
+                }</span>
+            </div>
+            <span class="transaction-amount ${transaction.type}">
+                ${transaction.type === "income" ? "+" : "-"}₱${Math.abs(
+      transaction.amount
+    ).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}
+            </span>
+            <div class="transaction-actions">
+                <button class="btn btn-delete" onclick="deleteTransaction(${actualIndex})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        `;
+
+    transactionList.appendChild(transactionItem);
+
+    if (transaction.type === "income") {
+      totalBalance += transaction.amount;
+    } else {
+      totalBalance -= transaction.amount;
+    }
+  });
+
+  balanceEl.innerText = `₱${totalBalance.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+  // Save to localStorage
+  localStorage.setItem("transactions", JSON.stringify(transactions));
+
+  // Update Chart
+  updateChart();
+}
+
+// Function to delete a transaction
+function deleteTransaction(index) {
+  transactions.splice(index, 1); // Remove the transaction
+  localStorage.setItem("transactions", JSON.stringify(transactions)); // Update localStorage
+  updateUI(); // Refresh UI
+}
+
+// Call updateUI on page load
+updateUI();
+
+// Add new transaction
+function addTransaction() {
+  const desc = descInput.value.trim();
+  const amount = parseFloat(amountInput.value);
+  const type = typeInput.value;
+  const category = categoryInput.value;
+
+  if (desc === "" || isNaN(amount) || amount <= 0) {
+    alert("Please enter valid details");
+    return;
+  }
+
+  transactions.push({
+    desc,
+    amount,
+    type,
+    category,
+    date: new Date().toISOString(),
+  });
+
+  updateUI();
+
+  // Reset form
+  descInput.value = "";
+  amountInput.value = "";
+}
+
+// Delete transaction
+function deleteTransaction(index) {
+  transactions.splice(index, 1);
+  updateUI();
+}
+
+// Update Chart
+function updateChart() {
+  const expenseData = {};
+  const colorPalette = [
+    "#6200ee",
+    "#03dac6",
+    "#ff6e40",
+    "#00b0ff",
+    "#76ff03",
+    "#ff4081",
+    "#ffab00",
+    "#29b6f6",
+    "#9575cd",
+    "#64dd17",
+  ];
+
+  // Calculate expense totals by category
+  transactions
+    .filter((t) => t.type === "expense")
+    .forEach((t) => {
+      expenseData[t.category] = (expenseData[t.category] || 0) + t.amount;
+    });
+
+  const labels = Object.keys(expenseData);
+  const values = Object.values(expenseData);
+
+  // Destroy previous chart if it exists
+  if (expenseChart) {
+    expenseChart.destroy();
+  }
+
+  // Create new chart
+  expenseChart = new Chart(chartCtx, {
+    type: "doughnut",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          data: values,
+          backgroundColor: labels.map(
+            (_, i) => colorPalette[i % colorPalette.length]
+          ),
+          borderWidth: 0,
+          hoverOffset: 5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      resizeDelay: 100,
+      plugins: {
+        legend: {
+          position: "right",
+          labels: {
+            boxWidth: 12,
+            padding: 15,
+            font: {
+              family: "Roboto",
+              size: 12,
+            },
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const label = context.label || "";
+              const value = context.formattedValue || "";
+              return `${label}: $${value}`;
+            },
+          },
+        },
+      },
+      cutout: "70%",
+      animation: {
+        animateScale: true,
+        animateRotate: true,
+      },
+    },
+  });
+
+  // Handle empty chart data
+  if (labels.length === 0) {
+    const ctx = chartCtx;
+    ctx.font = "16px Roboto";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      "No expense data to display",
+      ctx.canvas.width / 2,
+      ctx.canvas.height / 2
+    );
+  }
+}
+
+// Initialize UI
+categoryFilter.addEventListener("change", updateUI);
+
+// Initialize UI on page load
+document.addEventListener("DOMContentLoaded", updateUI);
+
+// Handle window resize for chart responsiveness
+window.addEventListener("resize", function () {
+  if (expenseChart) {
+    expenseChart.resize();
+  }
+});
+
+</script>
+
 </body>
 
 </html>
