@@ -48,5 +48,15 @@
 
 7. **Logout**  
    - Click on "Logout" to clear your session and return to the login page.
+   
+## Technologies Used
+- **HTML**
+- **CSS**
+- **JavaScript**
+- **Chart.js** (for graphical representation)
+- **AOS (Animate On Scroll)** (for animations)
+- **Font Awesome** (for icons)
+- **localStorage** Store user data and transactions persistently in the browser.
+
 
 
