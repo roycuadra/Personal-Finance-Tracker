@@ -23,7 +23,7 @@
 
 1. **Register a New Account**  
    - Click on "Register" on the login page.
-   - Enter your desired username, email, and password.
+   - Enter your desired username and password.
    - Submit the registration form to create an account.
    - You will be redirected to the login page after successful registration.
 
