@@ -3,7 +3,7 @@
 ### Easily track your income and expenses, filter transactions by category, and visualize your spending with interactive charts. Stay organized, manage your budget effectively, and achieve your financial goals with a user-friendly dashboard.
 
 ## Live View
-[Click here to open the application](https://roycuadra.github.io/Personal-Finance-Tracker/)
+[Click here to open the web application](https://roycuadra.github.io/Personal-Finance-Tracker/)
 
 ## GitHub Contributors:
 
