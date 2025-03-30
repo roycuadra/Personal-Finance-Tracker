@@ -19,7 +19,7 @@
 -  Data Persistence  ✔
 -  Uses localStorage to store user session.  ✔
 
--  ## User Steps-by-Step Instructions
+  ## User Steps-by-Step Instructions
 
 1. **Register a New Account**  
    - Click on "Register" on the login page.
