@@ -5,14 +5,18 @@
 ## Live View
 [Click here to open the web application](https://roycuadra.github.io/Personal-Finance-Tracker/)
 
-## Screenshot
-![Dashboard Screenshot](image.png){ width=600 }
+---
 
 ## GitHub Contributors:
 
 - Roy Cuadra
 - Lino Tesiorna
 - Melanel Masudog
+
+---
+
+## Screenshot  
+<img src="image.png" alt="Dashboard Screenshot" width="600">
 
 ## All Features: 
 -  User Authentication ✔
@@ -56,7 +60,9 @@
 
 7. **Logout**  
    - Click on "Logout" to clear your session and return to the login page.
-   
+
+ ---
+
 ## Technologies Used
 - **HTML**
 - **CSS**
