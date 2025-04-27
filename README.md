@@ -16,7 +16,7 @@
 ---
 
 ## Screenshot  
-<img src="image.png" alt="Dashboard Screenshot" width="800">
+<img src="image.png" alt="Dashboard Screenshot" width="750">
 
 ## All Features: 
 -  User Authentication ✔
