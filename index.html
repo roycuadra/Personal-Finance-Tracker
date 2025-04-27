@@ -22,11 +22,10 @@
     }
 
     .welcome {
-  text-align: center;
-  font-size: 2rem;
-  margin-top: 20px;
-}
-
+      text-align: center;
+      font-size: 2rem;
+      margin-top: 20px;
+    }
 
     .navbar {
       background-color: #4361ee;
@@ -123,6 +122,21 @@
       border-color: #4361ee;
     }
 
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .checkbox-container input {
+      margin-right: 0.5rem;
+    }
+
+    .checkbox-label {
+      color: #495057;
+      font-size: 0.95rem;
+    }
+
     .btn {
       width: 100%;
       padding: 0.9rem;
@@ -193,12 +207,12 @@
       border: none;
       background: none;
       cursor: pointer;
-      font-size: 1.2em;
-      transition: transform 0.3s ease-in-out;
+      color: #6c757d;
+      transition: color 0.3s ease-in-out;
     }
 
-    .toggle-password.active {
-      transform: scale(1.2);
+    .toggle-password:hover {
+      color: #4361ee;
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -237,9 +251,17 @@
             <label for="login-password" class="form-label">Password</label>
             <div class="password-wrapper">
               <input type="password" id="login-password" class="form-input" placeholder="Enter your password">
-              <button type="button" id="toggle-login-password" class="toggle-password">👁</button>
+              <button type="button" id="toggle-login-password" class="toggle-password">
+                <i class="fas fa-eye"></i>
+              </button>
             </div>
           </div>
+          
+          <div class="checkbox-container">
+            <input type="checkbox" id="remember-me">
+            <label for="remember-me" class="checkbox-label">Remember me</label>
+          </div>
+          
           <button class="btn" id="login-btn">Login</button>
           <div class="form-footer">
             Don't have an account? <a href="#" id="to-register">Register</a>
@@ -255,7 +277,9 @@
             <label for="register-password" class="form-label">Password</label>
             <div class="password-wrapper">
               <input type="password" id="register-password" class="form-input" placeholder="Choose a password">
-              <button type="button" id="toggle-register-password" class="toggle-password">👁</button>
+              <button type="button" id="toggle-register-password" class="toggle-password">
+                <i class="fas fa-eye"></i>
+              </button>
             </div>
           </div>
           <button class="btn" id="register-btn">Register</button>
@@ -270,14 +294,16 @@
     function togglePasswordVisibility(inputId, buttonId) {
       const passwordField = document.getElementById(inputId);
       const toggleButton = document.getElementById(buttonId);
+      const icon = toggleButton.querySelector('i');
+      
       if (passwordField.type === "password") {
         passwordField.type = "text";
-        toggleButton.classList.add("active");
-        toggleButton.textContent = "👁";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
       } else {
         passwordField.type = "password";
-        toggleButton.classList.remove("active");
-        toggleButton.textContent = "👁";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
       }
     }
 
@@ -289,8 +315,6 @@
       togglePasswordVisibility("login-password", "toggle-login-password");
     });
   </script>
-
-
 
   <script>
     // DOM Elements
@@ -304,6 +328,7 @@
     const registerBtn = document.getElementById('register-btn');
     const successMessage = document.getElementById('success-message');
     const errorMessage = document.getElementById('error-message');
+    const rememberMeCheckbox = document.getElementById('remember-me');
 
     // Tab switching
     function switchToLogin() {
@@ -346,6 +371,20 @@
       }
     }
 
+    // Simple encryption function for password (for demonstration purposes only)
+    function encryptPassword(password) {
+      // In a real app, use a proper encryption method
+      // This is just a simple encoding for demonstration
+      return btoa(password);
+    }
+    
+    // Simple decryption function for password (for demonstration purposes only)
+    function decryptPassword(encodedPassword) {
+      // In a real app, use a proper decryption method
+      // This is just a simple decoding for demonstration
+      return atob(encodedPassword);
+    }
+
     // Registration
     registerBtn.addEventListener('click', function () {
       const username = document.getElementById('register-username').value.trim();
@@ -382,6 +421,7 @@
     loginBtn.addEventListener('click', function () {
       const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value.trim();
+      const rememberMe = rememberMeCheckbox.checked;
 
       if (!username || !password) {
         showMessage('error', 'Username and password are required');
@@ -398,6 +438,19 @@
 
       // Set logged in user
       localStorage.setItem('currentUser', username);
+      
+      // Handle "Remember me" functionality
+      if (rememberMe) {
+        // Store credentials securely (using simple encoding for demo purposes)
+        const credentials = {
+          username: username,
+          password: encryptPassword(password)
+        };
+        localStorage.setItem('rememberedCredentials', JSON.stringify(credentials));
+      } else {
+        // Remove remembered credentials if not checked
+        localStorage.removeItem('rememberedCredentials');
+      }
 
       // Show success and redirect (in a real app, redirect to dashboard)
       showMessage('success', 'Login successful! Redirecting...');
@@ -418,13 +471,26 @@
         // Redirect logged-in users away from the login page
         window.location.href = 'dashboard.html'; // Replace with your actual dashboard page
       }
+      
+      // Check for remembered credentials
+      const rememberedCredentialsStr = localStorage.getItem('rememberedCredentials');
+      if (rememberedCredentialsStr) {
+        try {
+          const rememberedCredentials = JSON.parse(rememberedCredentialsStr);
+          document.getElementById('login-username').value = rememberedCredentials.username;
+          document.getElementById('login-password').value = decryptPassword(rememberedCredentials.password);
+          document.getElementById('remember-me').checked = true;
+        } catch (e) {
+          // If there's an error parsing or decrypting, just clear the remembered credentials
+          localStorage.removeItem('rememberedCredentials');
+        }
+      }
     };
   </script>
 
   <script>
     AOS.init();
   </script>
-
 
 </body>
 
