@@ -73,15 +73,15 @@
       <!-- Transactions Card -->
       <div class="card transactions-card">
         <div class="card-header">
-  <h2>Recent Transactions</h2>
-  
-  <button title="Delete All" class="btn btn-delete-all" onclick="deleteAllTransactions()">
-    <i class="fas fa-trash"></i>
-  </button>
-<div class="icon">
-    <i class="fas fa-exchange-alt"></i>
-  </div>
-</div>
+          <h2>Recent Transactions</h2>
+
+          <button title="Delete All" class="btn btn-delete-all" onclick="deleteAllTransactions()">
+            <i class="fas fa-trash"></i>
+          </button>
+          <div class="icon">
+            <i class="fas fa-exchange-alt"></i>
+          </div>
+        </div>
         <div class="transactions-list" id="transaction-list"></div>
       </div>
 
@@ -193,34 +193,11 @@
     // Initialize chart
     let expenseChart = null;
 
-    // Check if localStorage has transactions, if not, set default transactions
+    // Check if localStorage has transactions
     let storedTransactions = JSON.parse(localStorage.getItem("transactions"));
 
-    if (!storedTransactions || storedTransactions.length === 0) {
-      storedTransactions = [
-        {
-          desc: "Monthly Salary",
-          amount: 50000,
-          type: "income",
-          category: "salary",
-        },
-        {
-          desc: "Siargao Vacation",
-          amount: 20000,
-          type: "expense",
-          category: "travel",
-        },
-        {
-          desc: "Land Tour",
-          amount: 5000,
-          type: "expense",
-          category: "travel"
-        },
-      ];
-      localStorage.setItem("transactions", JSON.stringify(storedTransactions)); // Save to localStorage
-    }
-
-    let transactions = storedTransactions; // Assign transactions to be used in UI
+    // If no transactions found, initialize as an empty array
+    let transactions = storedTransactions || []; // No default transactions!
 
     // Function to update UI
     function updateUI() {
@@ -241,28 +218,27 @@
         transactionItem.classList.add(transaction.type);
 
         transactionItem.innerHTML = `
-            <div class="transaction-info">
-                <span class="transaction-desc">${transaction.desc}</span>
-                <span class="transaction-category">${transaction.category
-          }</span>
-            </div>
-            <span class="transaction-amount ${transaction.type}">
-                ${transaction.type === "income" ? "+" : "-"}₱${Math.abs(
-            transaction.amount
-          ).toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-            </span>
-            <div class="transaction-actions">
-                <button title="EDIT" class="btn btn-edit" onclick="editTransaction(${actualIndex})" style="margin-right: 5px;">
-                    <i  class="fas fa-edit"></i>
-                </button>
-                <button title="DELETE" class="btn btn-delete" onclick="deleteTransaction(${actualIndex})">
-                    <i  class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-        `;
+        <div class="transaction-info">
+            <span class="transaction-desc">${transaction.desc}</span>
+            <span class="transaction-category">${transaction.category}</span>
+        </div>
+        <span class="transaction-amount ${transaction.type}">
+            ${transaction.type === "income" ? "+" : "-"}₱${Math.abs(
+          transaction.amount
+        ).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
+        </span>
+        <div class="transaction-actions">
+            <button title="EDIT" class="btn btn-edit" onclick="editTransaction(${actualIndex})" style="margin-right: 5px;">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button title="DELETE" class="btn btn-delete" onclick="deleteTransaction(${actualIndex})">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    `;
 
         transactionList.appendChild(transactionItem);
 
@@ -284,6 +260,7 @@
       // Update Chart
       updateChart();
     }
+
 
     // Function to edit a transaction
     function editTransaction(index) {
@@ -576,35 +553,35 @@
 
 
 
-// Now add the deleteAllTransactions function
-function deleteAllTransactions() {
-  // Show confirmation modal using SweetAlert
-  Swal.fire({
-    title: 'Delete All Transactions',
-    text: 'Are you sure you want to delete all transactions? This cannot be undone.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Yes, delete all!'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Clear all transactions
-      transactions = [];
-      localStorage.setItem("transactions", JSON.stringify(transactions)); // Update localStorage
-      updateUI(); // Refresh UI
-      
-      // Show success message
+    // Now add the deleteAllTransactions function
+    function deleteAllTransactions() {
+      // Show confirmation modal using SweetAlert
       Swal.fire({
-        title: 'Deleted!',
-        text: 'All transactions have been deleted.',
-        icon: 'success',
-        timer: 1500,
-        showConfirmButton: false
+        title: 'Delete All Transactions',
+        text: 'Are you sure you want to delete all transactions? This cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete all!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Clear all transactions
+          transactions = [];
+          localStorage.setItem("transactions", JSON.stringify(transactions)); // Update localStorage
+          updateUI(); // Refresh UI
+
+          // Show success message
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'All transactions have been deleted.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        }
       });
     }
-  });
-}
   </script>
 
 </body>
