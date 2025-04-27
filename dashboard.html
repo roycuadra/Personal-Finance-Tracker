@@ -4,10 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Finance Dashboard</title>
+  <link rel="shortcut icon" href="save-money.png" type="image/x-icon">
+  <title>Personal Finance Tracker</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <!-- SweetAlert2 CSS and JS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.12/sweetalert2.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.12/sweetalert2.all.min.js"></script>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <link rel="stylesheet" href="style.css">
@@ -46,6 +50,8 @@
             <option value="food">Food</option>
             <option value="entertainment">Entertainment</option>
             <option value="shopping">Shopping</option>
+            <option value="travel">Travel</option>
+            <option value="gadgets">Gadgets</option>
             <option value="other">Other</option>
           </select>
         </div>
@@ -67,11 +73,15 @@
       <!-- Transactions Card -->
       <div class="card transactions-card">
         <div class="card-header">
-          <h2>Recent Transactions</h2>
-          <div class="icon">
-            <i class="fas fa-exchange-alt"></i>
-          </div>
-        </div>
+  <h2>Recent Transactions</h2>
+  
+  <button title="Delete All" class="btn btn-delete-all" onclick="deleteAllTransactions()">
+    <i class="fas fa-trash"></i>
+  </button>
+<div class="icon">
+    <i class="fas fa-exchange-alt"></i>
+  </div>
+</div>
         <div class="transactions-list" id="transaction-list"></div>
       </div>
 
@@ -109,6 +119,8 @@
                 <option value="food">Food</option>
                 <option value="entertainment">Entertainment</option>
                 <option value="shopping">Shopping</option>
+                <option value="travel">Travel</option>
+                <option value="gadgets">Gadgets</option>
                 <option value="other">Other</option>
               </select>
             </div>
@@ -133,9 +145,32 @@
   </script>
 
   <script>
+    // Find your existing logout function and add this line inside it:
     function logout() {
-      localStorage.removeItem('currentUser'); // Clear session
-      window.location.href = 'index.html'; // Redirect to login
+      // Show confirmation dialog
+      Swal.fire({
+        title: 'Log Out',
+        text: 'Are you sure you want to log out?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#6200ee',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, log out!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.removeItem('currentUser'); // Clear session
+          sessionStorage.removeItem('welcomeMessageShown'); // Clear welcome message flag
+          Swal.fire({
+            title: 'Logged Out!',
+            text: 'You have been successfully logged out.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          }).then(() => {
+            window.location.href = 'index.html'; // Redirect to login
+          });
+        }
+      });
     }
   </script>
 
@@ -144,258 +179,433 @@
   </script>
 
 
-<script>
-// Get elements
-const balanceEl = document.getElementById("balance");
-const transactionList = document.getElementById("transaction-list");
-const descInput = document.getElementById("desc");
-const amountInput = document.getElementById("amount");
-const typeInput = document.getElementById("type");
-const categoryInput = document.getElementById("category");
-const categoryFilter = document.getElementById("category-filter");
-const chartCtx = document.getElementById("expenseChart").getContext("2d");
+  <script>
+    // Get elements
+    const balanceEl = document.getElementById("balance");
+    const transactionList = document.getElementById("transaction-list");
+    const descInput = document.getElementById("desc");
+    const amountInput = document.getElementById("amount");
+    const typeInput = document.getElementById("type");
+    const categoryInput = document.getElementById("category");
+    const categoryFilter = document.getElementById("category-filter");
+    const chartCtx = document.getElementById("expenseChart").getContext("2d");
 
-// Initialize chart
-let expenseChart = null;
+    // Initialize chart
+    let expenseChart = null;
 
-// Check if localStorage has transactions, if not, set default transactions
-let storedTransactions = JSON.parse(localStorage.getItem("transactions"));
+    // Check if localStorage has transactions, if not, set default transactions
+    let storedTransactions = JSON.parse(localStorage.getItem("transactions"));
 
-if (!storedTransactions || storedTransactions.length === 0) {
-  storedTransactions = [
-    {
-      desc: "Monthly Salary",
-      amount: 50000,
-      type: "income",
-      category: "Salary",
-    },
-    {
-      desc: "Siargao Vacation",
-      amount: 20000,
-      type: "expense",
-      category: "Other",
-    },
-    { desc: "Land Tour", amount: 5000, type: "expense", category: "Other" },
-  ];
-  localStorage.setItem("transactions", JSON.stringify(storedTransactions)); // Save to localStorage
-}
+    if (!storedTransactions || storedTransactions.length === 0) {
+      storedTransactions = [
+        {
+          desc: "Monthly Salary",
+          amount: 50000,
+          type: "income",
+          category: "salary",
+        },
+        {
+          desc: "Siargao Vacation",
+          amount: 20000,
+          type: "expense",
+          category: "travel",
+        },
+        {
+          desc: "Land Tour",
+          amount: 5000,
+          type: "expense",
+          category: "travel"
+        },
+      ];
+      localStorage.setItem("transactions", JSON.stringify(storedTransactions)); // Save to localStorage
+    }
 
-let transactions = storedTransactions; // Assign transactions to be used in UI
+    let transactions = storedTransactions; // Assign transactions to be used in UI
 
-// Function to update UI
-function updateUI() {
-  transactionList.innerHTML = "";
-  let totalBalance = 0;
-  let filteredTransactions = transactions.filter(
-    (t) => categoryFilter.value === "all" || t.category === categoryFilter.value
-  );
+    // Function to update UI
+    function updateUI() {
+      transactionList.innerHTML = "";
+      let totalBalance = 0;
+      let filteredTransactions = transactions.filter(
+        (t) => categoryFilter.value === "all" || t.category === categoryFilter.value
+      );
 
-  // Sort transactions (newest first)
-  filteredTransactions = [...filteredTransactions].reverse();
+      // Sort transactions (newest first)
+      filteredTransactions = [...filteredTransactions].reverse();
 
-  filteredTransactions.forEach((transaction, index) => {
-    const actualIndex = transactions.indexOf(transaction);
+      filteredTransactions.forEach((transaction, index) => {
+        const actualIndex = transactions.indexOf(transaction);
 
-    const transactionItem = document.createElement("div");
-    transactionItem.classList.add("transaction-item");
-    transactionItem.classList.add(transaction.type);
+        const transactionItem = document.createElement("div");
+        transactionItem.classList.add("transaction-item");
+        transactionItem.classList.add(transaction.type);
 
-    transactionItem.innerHTML = `
+        transactionItem.innerHTML = `
             <div class="transaction-info">
                 <span class="transaction-desc">${transaction.desc}</span>
-                <span class="transaction-category">${
-                  transaction.category
-                }</span>
+                <span class="transaction-category">${transaction.category
+          }</span>
             </div>
             <span class="transaction-amount ${transaction.type}">
                 ${transaction.type === "income" ? "+" : "-"}₱${Math.abs(
-      transaction.amount
-    ).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}
+            transaction.amount
+          ).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
             </span>
             <div class="transaction-actions">
-                <button class="btn btn-delete" onclick="deleteTransaction(${actualIndex})">
-                    <i class="fas fa-trash-alt"></i>
+                <button title="EDIT" class="btn btn-edit" onclick="editTransaction(${actualIndex})" style="margin-right: 5px;">
+                    <i  class="fas fa-edit"></i>
+                </button>
+                <button title="DELETE" class="btn btn-delete" onclick="deleteTransaction(${actualIndex})">
+                    <i  class="fas fa-trash-alt"></i>
                 </button>
             </div>
         `;
 
-    transactionList.appendChild(transactionItem);
+        transactionList.appendChild(transactionItem);
 
-    if (transaction.type === "income") {
-      totalBalance += transaction.amount;
-    } else {
-      totalBalance -= transaction.amount;
+        if (transaction.type === "income") {
+          totalBalance += transaction.amount;
+        } else {
+          totalBalance -= transaction.amount;
+        }
+      });
+
+      balanceEl.innerText = `₱${totalBalance.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+
+      // Save to localStorage
+      localStorage.setItem("transactions", JSON.stringify(transactions));
+
+      // Update Chart
+      updateChart();
     }
-  });
 
-  balanceEl.innerText = `₱${totalBalance.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+    // Function to edit a transaction
+    function editTransaction(index) {
+      const transaction = transactions[index];
 
-  // Save to localStorage
-  localStorage.setItem("transactions", JSON.stringify(transactions));
+      Swal.fire({
+        title: 'Edit Transaction',
+        html: `
+      <div style="text-align: left; margin-bottom: 15px;">
+        <label for="swal-desc" style="display: block; margin-bottom: 5px; font-weight: 500;">Description</label>
+        <input id="swal-desc" class="swal2-input" value="${transaction.desc}" placeholder="Enter description" style="width: 100%; margin: 0;">
+      </div>
+      <div style="text-align: left; margin-bottom: 15px;">
+        <label for="swal-amount" style="display: block; margin-bottom: 5px; font-weight: 500;">Amount</label>
+        <input id="swal-amount" class="swal2-input" type="number" value="${transaction.amount}" placeholder="Enter amount" style="width: 100%; margin: 0;">
+      </div>
+      <div style="text-align: left; margin-bottom: 15px;">
+        <label for="swal-type" style="display: block; margin-bottom: 5px; font-weight: 500;">Type</label>
+        <select id="swal-type" class="swal2-input" style="width: 100%; margin: 0;">
+          <option value="income" ${transaction.type === 'income' ? 'selected' : ''}>Income</option>
+          <option value="expense" ${transaction.type === 'expense' ? 'selected' : ''}>Expense</option>
+        </select>
+      </div>
+      <div style="text-align: left; margin-bottom: 15px;">
+        <label for="swal-category" style="display: block; margin-bottom: 5px; font-weight: 500;">Category</label>
+        <select id="swal-category" class="swal2-input" style="width: 100%; margin: 0;">
+          <option value="salary" ${transaction.category === 'salary' ? 'selected' : ''}>Salary</option>
+          <option value="food" ${transaction.category === 'food' ? 'selected' : ''}>Food</option>
+          <option value="entertainment" ${transaction.category === 'entertainment' ? 'selected' : ''}>Entertainment</option>
+          <option value="shopping" ${transaction.category === 'shopping' ? 'selected' : ''}>Shopping</option>
+          <option value="travel" ${transaction.category === 'travel' ? 'selected' : ''}>Travel</option>
+          <option value="gadgets" ${transaction.category === 'gadgets' ? 'selected' : ''}>Gadgets</option>
+          <option value="other" ${transaction.category === 'other' ? 'selected' : ''}>Other</option>
+        </select>
+      </div>
+    `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonColor: '#6200ee',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Save Changes',
+        preConfirm: () => {
+          const desc = document.getElementById('swal-desc').value.trim();
+          const amount = parseFloat(document.getElementById('swal-amount').value);
+          const type = document.getElementById('swal-type').value;
+          const category = document.getElementById('swal-category').value;
 
-  // Update Chart
-  updateChart();
-}
+          if (desc === "" || isNaN(amount) || amount <= 0) {
+            Swal.showValidationMessage('Please enter valid description and amount greater than zero');
+            return false;
+          }
 
-// Function to delete a transaction
-function deleteTransaction(index) {
-  transactions.splice(index, 1); // Remove the transaction
-  localStorage.setItem("transactions", JSON.stringify(transactions)); // Update localStorage
-  updateUI(); // Refresh UI
-}
+          return { desc, amount, type, category };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Update transaction
+          transactions[index] = {
+            ...transactions[index],
+            desc: result.value.desc,
+            amount: result.value.amount,
+            type: result.value.type,
+            category: result.value.category,
+          };
 
-// Call updateUI on page load
-updateUI();
+          // Update UI
+          updateUI();
 
-// Add new transaction
-function addTransaction() {
-  const desc = descInput.value.trim();
-  const amount = parseFloat(amountInput.value);
-  const type = typeInput.value;
-  const category = categoryInput.value;
+          // Show success message
+          Swal.fire({
+            title: 'Updated!',
+            text: 'Transaction has been updated successfully.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        }
+      });
+    }
 
-  if (desc === "" || isNaN(amount) || amount <= 0) {
-    alert("Please enter valid details");
-    return;
-  }
+    // Function to delete a transaction
+    function deleteTransaction(index) {
+      // Show confirmation modal using SweetAlert
+      Swal.fire({
+        title: 'Delete Transaction',
+        text: 'Are you sure you want to delete this transaction?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          transactions.splice(index, 1); // Remove the transaction
+          localStorage.setItem("transactions", JSON.stringify(transactions)); // Update localStorage
+          updateUI(); // Refresh UI
 
-  transactions.push({
-    desc,
-    amount,
-    type,
-    category,
-    date: new Date().toISOString(),
-  });
+          // Show success message
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'Your transaction has been deleted.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        }
+      });
+    }
 
-  updateUI();
+    // Call updateUI on page load
+    updateUI();
 
-  // Reset form
-  descInput.value = "";
-  amountInput.value = "";
-}
+    // Add new transaction
+    function addTransaction() {
+      const desc = descInput.value.trim();
+      const amount = parseFloat(amountInput.value);
+      const type = typeInput.value;
+      const category = categoryInput.value;
 
-// Delete transaction
-function deleteTransaction(index) {
-  transactions.splice(index, 1);
-  updateUI();
-}
+      if (desc === "" || isNaN(amount) || amount <= 0) {
+        // Use SweetAlert for validation errors
+        Swal.fire({
+          title: 'Invalid Input',
+          text: 'Please enter a valid description and amount greater than zero',
+          icon: 'error',
+          confirmButtonColor: '#6200ee'
+        });
+        return;
+      }
 
-// Update Chart
-function updateChart() {
-  const expenseData = {};
-  const colorPalette = [
-    "#6200ee",
-    "#03dac6",
-    "#ff6e40",
-    "#00b0ff",
-    "#76ff03",
-    "#ff4081",
-    "#ffab00",
-    "#29b6f6",
-    "#9575cd",
-    "#64dd17",
-  ];
+      transactions.push({
+        desc,
+        amount,
+        type,
+        category,
+        date: new Date().toISOString(),
+      });
 
-  // Calculate expense totals by category
-  transactions
-    .filter((t) => t.type === "expense")
-    .forEach((t) => {
-      expenseData[t.category] = (expenseData[t.category] || 0) + t.amount;
+      updateUI();
+
+      // Reset form
+      descInput.value = "";
+      amountInput.value = "";
+
+      // Show success message with SweetAlert
+      Swal.fire({
+        title: 'Success!',
+        text: `Your ${type} transaction has been added successfully.`,
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+
+    // Update Chart
+    function updateChart() {
+      const expenseData = {};
+      const colorPalette = [
+        "#6200ee",
+        "#03dac6",
+        "#ff6e40",
+        "#00b0ff",
+        "#76ff03",
+        "#ff4081",
+        "#ffab00",
+        "#29b6f6",
+        "#9575cd",
+        "#64dd17",
+      ];
+
+      // Calculate expense totals by category
+      transactions
+        .filter((t) => t.type === "expense")
+        .forEach((t) => {
+          expenseData[t.category] = (expenseData[t.category] || 0) + t.amount;
+        });
+
+      const labels = Object.keys(expenseData);
+      const values = Object.values(expenseData);
+
+      // Destroy previous chart if it exists
+      if (expenseChart) {
+        expenseChart.destroy();
+      }
+
+      // Create new chart
+      expenseChart = new Chart(chartCtx, {
+        type: "doughnut",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              data: values,
+              backgroundColor: labels.map(
+                (_, i) => colorPalette[i % colorPalette.length]
+              ),
+              borderWidth: 0,
+              hoverOffset: 5,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          resizeDelay: 100,
+          plugins: {
+            legend: {
+              position: "right",
+              labels: {
+                boxWidth: 12,
+                padding: 15,
+                font: {
+                  family: "Roboto",
+                  size: 12,
+                },
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const label = context.label || "";
+                  const value = context.formattedValue || "";
+                  return `${label}: ₱${value}`;
+                },
+              },
+            },
+          },
+          cutout: "70%",
+          animation: {
+            animateScale: true,
+            animateRotate: true,
+          },
+        },
+      });
+
+      // Handle empty chart data
+      if (labels.length === 0) {
+        const ctx = chartCtx;
+        ctx.font = "16px Roboto";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          "No expense data to display",
+          ctx.canvas.width / 2,
+          ctx.canvas.height / 2
+        );
+      }
+    }
+
+    // Initialize UI
+    categoryFilter.addEventListener("change", updateUI);
+
+    // Initialize UI on page load
+    document.addEventListener("DOMContentLoaded", updateUI);
+
+    // Handle window resize for chart responsiveness
+    window.addEventListener("resize", function () {
+      if (expenseChart) {
+        expenseChart.resize();
+      }
     });
 
-  const labels = Object.keys(expenseData);
-  const values = Object.values(expenseData);
+    // Replace the existing welcome message code with this
+    document.addEventListener("DOMContentLoaded", function () {
+      // Check if welcome message has been shown in this session
+      const welcomeShown = sessionStorage.getItem('welcomeMessageShown');
 
-  // Destroy previous chart if it exists
-  if (expenseChart) {
-    expenseChart.destroy();
-  }
+      // Only show welcome message if it hasn't been shown yet in this session
+      if (!welcomeShown) {
+        setTimeout(() => {
+          const currentUser = localStorage.getItem('currentUser');
+          const username = currentUser || 'User';
 
-  // Create new chart
-  expenseChart = new Chart(chartCtx, {
-    type: "doughnut",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          data: values,
-          backgroundColor: labels.map(
-            (_, i) => colorPalette[i % colorPalette.length]
-          ),
-          borderWidth: 0,
-          hoverOffset: 5,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      resizeDelay: 100,
-      plugins: {
-        legend: {
-          position: "right",
-          labels: {
-            boxWidth: 12,
-            padding: 15,
-            font: {
-              family: "Roboto",
-              size: 12,
-            },
-          },
-        },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              const label = context.label || "";
-              const value = context.formattedValue || "";
-              return `${label}: $${value}`;
-            },
-          },
-        },
-      },
-      cutout: "70%",
-      animation: {
-        animateScale: true,
-        animateRotate: true,
-      },
-    },
+          Swal.fire({
+            title: `Welcome back, ${username}!`,
+            text: 'Your finance dashboard is ready.',
+            icon: 'info',
+            confirmButtonColor: '#6200ee',
+            timer: 2000,
+            timerProgressBar: true,
+            showConfirmButton: false
+          });
+
+          // Mark that we've shown the welcome message in this session
+          sessionStorage.setItem('welcomeMessageShown', 'true');
+        }, 1500);
+      }
+    });
+
+
+
+// Now add the deleteAllTransactions function
+function deleteAllTransactions() {
+  // Show confirmation modal using SweetAlert
+  Swal.fire({
+    title: 'Delete All Transactions',
+    text: 'Are you sure you want to delete all transactions? This cannot be undone.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete all!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Clear all transactions
+      transactions = [];
+      localStorage.setItem("transactions", JSON.stringify(transactions)); // Update localStorage
+      updateUI(); // Refresh UI
+      
+      // Show success message
+      Swal.fire({
+        title: 'Deleted!',
+        text: 'All transactions have been deleted.',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
   });
-
-  // Handle empty chart data
-  if (labels.length === 0) {
-    const ctx = chartCtx;
-    ctx.font = "16px Roboto";
-    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(
-      "No expense data to display",
-      ctx.canvas.width / 2,
-      ctx.canvas.height / 2
-    );
-  }
 }
-
-// Initialize UI
-categoryFilter.addEventListener("change", updateUI);
-
-// Initialize UI on page load
-document.addEventListener("DOMContentLoaded", updateUI);
-
-// Handle window resize for chart responsiveness
-window.addEventListener("resize", function () {
-  if (expenseChart) {
-    expenseChart.resize();
-  }
-});
-
-</script>
+  </script>
 
 </body>
 

@@ -19,6 +19,8 @@
 -  Expense Breakdown Chart  ✔
 -  Recent Transactions List  ✔
 -  Add New Transaction  ✔
+-  Edit Transaction  ✔
+-  Delete Transaction ✔
 -  Data Persistence  ✔
 -  Uses localStorage to store user session.  ✔
 
@@ -59,6 +61,7 @@
 - **Chart.js** (for graphical representation)
 - **AOS (Animate On Scroll)** (for animations)
 - **Font Awesome** (for icons)
+- **SweetAlert2** (for Pop ups & Alert)
 - **localStorage** Store user data and transactions persistently in the browser.
 
 
