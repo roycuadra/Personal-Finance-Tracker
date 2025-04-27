@@ -5,6 +5,9 @@
 ## Live View
 [Click here to open the web application](https://roycuadra.github.io/Personal-Finance-Tracker/)
 
+## Screenshot
+![Dashboard Screenshot](image.png){ width=600 }
+
 ## GitHub Contributors:
 
 - Roy Cuadra
@@ -24,7 +27,7 @@
 -  Data Persistence  ✔
 -  Uses localStorage to store user session.  ✔
 
-  ## User Steps-by-Step Instructions
+## User Steps-by-Step Instructions
 
 1. **Register a New Account**  
    - Click on "Register" on the login page.
@@ -63,6 +66,3 @@
 - **Font Awesome** (for icons)
 - **SweetAlert2** (for Pop ups & Alert)
 - **localStorage** Store user data and transactions persistently in the browser.
-
-
-
